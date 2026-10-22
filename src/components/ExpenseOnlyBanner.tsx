@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { DollarSign, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ExpenseOnlyBannerProps {
@@ -26,21 +26,23 @@ export function ExpenseOnlyBanner({
   };
 
   return (
-    <div className="flex flex-col justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 sm:flex-row sm:items-center">
-      <div className="space-y-0.5">
-        <div className="flex items-center gap-2 text-xs font-semibold text-amber-300">
-          <DollarSign className="h-4 w-4 text-amber-400" />
-          <span>Expense-Only Breakdown Mode (No Monthly Income Detected)</span>
+    <div className="relative flex flex-col justify-between gap-3 border border-status-caution/60 bg-paper-sheet p-4 sm:flex-row sm:items-center">
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 w-[3px] bg-status-caution"
+      />
+      <div className="pl-2">
+        <div className="type-micro-label text-status-caution">
+          NOTICE // EXPENSE-ONLY STATEMENT MODE (NO MONTHLY INCOME DETECTED)
         </div>
-        <p className="text-xs text-amber-200/80">
-          Expense buckets and What-If savings cuts work now. Enter your monthly
-          take-home pay to unlock Safe Daily Allowance and Surplus math:
+        <p className="mt-1 text-[13px] leading-[1.45] text-ink-secondary">
+          Expense buckets and What-If savings cuts are active. Enter monthly net take-home pay to compute Safe Daily Allowance:
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex items-center gap-2 shrink-0">
+      <form onSubmit={handleSubmit} className="flex items-center gap-2 shrink-0 pl-2 sm:pl-0">
         <div className="relative">
-          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 font-mono text-xs text-slate-400">
+          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 font-mono text-xs text-ink-muted">
             {currencySymbol}
           </span>
           <input
@@ -50,7 +52,7 @@ export function ExpenseOnlyBanner({
             onChange={(e) => setIncomeDraft(e.target.value)}
             placeholder="3,200"
             aria-label="Monthly income amount"
-            className="h-8 w-28 rounded-md border border-slate-700 bg-slate-950 pl-6 pr-2.5 font-mono text-xs tabular-nums text-slate-100 placeholder:text-slate-500 focus:border-emerald-500 focus:outline-none"
+            className="h-8 w-28 rounded-none border border-rule-hairline bg-paper-base pl-6 pr-2.5 font-mono text-xs tabular-nums text-ink-primary placeholder:text-ink-muted focus:border-accent-primary focus:outline-none"
           />
         </div>
         <Button
@@ -59,7 +61,7 @@ export function ExpenseOnlyBanner({
           disabled={!incomeDraft.trim()}
           className="h-8"
         >
-          Apply Income
+          SET INCOME
           <ArrowRight className="h-3.5 w-3.5" />
         </Button>
       </form>

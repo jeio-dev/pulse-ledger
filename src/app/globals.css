@@ -5,13 +5,137 @@
 @layer base {
   :root {
     color-scheme: dark;
+
+    /* Paper Tokens — Flat Architectural Surfaces & Hairlines */
+    --paper-base: #0a0d10;
+    --paper-sheet: #10151a;
+    --paper-interactive: #161d24;
+    --rule-hairline: #212a34;
+
+    /* Ink Tokens — Typographic Hierarchy */
+    --ink-primary: #f2f5f8;
+    --ink-secondary: #94a0ad;
+    --ink-muted: #586573;
+
+    /* Primary Accent Token — Single High-Signal Focal Color */
+    --accent-primary: #10b981;
+
+    /* Functional Financial Status Tokens — Strictly for Deficit/Warning Readouts */
+    --status-deficit: #f43f5e;
+    --status-caution: #f59e0b;
   }
 
   body {
-    @apply bg-slate-950 text-slate-100 antialiased selection:bg-emerald-500/30 selection:text-emerald-200;
+    background-color: var(--paper-base);
+    color: var(--ink-primary);
+    font-family: var(--font-sans), "Plus Jakarta Sans", system-ui, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: rgba(16, 185, 129, 0.24);
+    color: var(--ink-primary);
   }
 }
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* Explicit Typographic Scale Tokens */
+.type-hero-figure {
+  font-family: var(--font-mono), "IBM Plex Mono", monospace;
+  font-size: 2.25rem;
+  line-height: 1.05;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.type-section-header {
+  font-family: var(--font-display), "Space Grotesk", sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.type-bucket-title {
+  font-family: var(--font-display), "Space Grotesk", sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.type-micro-label {
+  font-family: var(--font-mono), "IBM Plex Mono", monospace;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Motion Spec 1: Orchestrated Entrance (transform + opacity only, 220ms < 300ms) */
+@keyframes ledgerSectionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-ledger-reveal {
+  opacity: 0;
+  animation: ledgerSectionReveal 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.stagger-1 {
+  animation-delay: 0ms;
+}
+
+.stagger-2 {
+  animation-delay: 40ms;
+}
+
+.stagger-3 {
+  animation-delay: 80ms;
+}
+
+/* Motion Spec 2: Scroll-Pinned Triage Strip (transform + opacity only, 180ms < 300ms) */
+.triage-pin-transition {
+  transition-property: transform, opacity;
+  transition-duration: 180ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-ledger-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  .triage-pin-transition {
+    transform: none !important;
+    transition: none !important;
+  }
 }

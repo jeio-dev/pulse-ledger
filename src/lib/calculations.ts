@@ -60,6 +60,8 @@ export interface DerivedCashflowMetrics {
     baselineAmount: number;
   };
   monthlySaved: number;
+  annualizedCutSavings: number;
+  annualizedNetSurplus: number;
   annualizedSavings: number;
 
   surplusStatus: SemanticStatus;
@@ -140,7 +142,11 @@ export function computeDerivedMetrics(
         };
 
   const monthlySaved = baselineTotalSpend - simulatedTotalSpend;
-  const annualizedSavings = Math.max(0, monthlySaved * 12);
+  const annualizedCutSavings = Math.max(0, monthlySaved * 12);
+  const annualizedNetSurplus =
+    !isExpenseOnlyMode && simulatedSurplus > 0 ? simulatedSurplus * 12 : 0;
+  const annualizedSavings =
+    annualizedNetSurplus > 0 ? annualizedNetSurplus : annualizedCutSavings;
 
   // Traffic-light semantic badge logic
   let surplusStatus: SemanticStatus = "amber";
@@ -211,6 +217,8 @@ export function computeDerivedMetrics(
     dailyDelta,
     largestLeakCategory,
     monthlySaved,
+    annualizedCutSavings,
+    annualizedNetSurplus,
     annualizedSavings,
     surplusStatus,
     surplusStatusLabel,

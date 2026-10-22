@@ -4,23 +4,23 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-none font-mono text-xs font-semibold uppercase tracking-[0.05em] transition-opacity duration-180 ease-ledger-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent-primary disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400 shadow-sm shadow-emerald-950/50",
+          "border border-accent-primary bg-accent-primary text-paper-base hover:opacity-90",
         secondary:
-          "bg-slate-800/90 text-slate-200 border border-slate-700/80 hover:bg-slate-800 hover:text-white",
+          "border border-rule-hairline bg-paper-interactive text-ink-primary hover:border-ink-muted",
         outline:
-          "border border-slate-800 bg-slate-900/70 text-slate-300 hover:bg-slate-800/80 hover:text-slate-100 hover:border-slate-700",
+          "border border-rule-hairline bg-paper-base text-ink-secondary hover:bg-paper-interactive hover:text-ink-primary",
         ghost:
-          "text-slate-400 hover:bg-slate-800/60 hover:text-slate-200",
+          "text-ink-secondary hover:bg-paper-interactive hover:text-ink-primary",
       },
       size: {
         default: "h-10 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-11 rounded-lg px-6",
+        sm: "h-8 px-3 text-[11px]",
+        lg: "h-11 px-6",
         icon: "h-9 w-9",
       },
     },

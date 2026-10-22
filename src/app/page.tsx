@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { Activity, Sparkles, Cpu, HardDrive } from "lucide-react";
 import { InputPanel } from "@/components/InputPanel";
 import { ReadyEmptyState } from "@/components/ReadyEmptyState";
 import { ExpenseOnlyBanner } from "@/components/ExpenseOnlyBanner";
@@ -205,64 +204,51 @@ export default function PulseLedgerPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      {/* Header Bar */}
-      <header className="border-b border-slate-800/90 bg-slate-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-400">
-              <Activity className="h-4 w-4" />
+    <div className="min-h-screen bg-paper-base text-ink-primary">
+      {/* Architectural Masthead Strip */}
+      <header className="border-b border-rule-hairline bg-paper-sheet">
+        <div className="mx-auto flex max-w-[1380px] flex-wrap items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
+          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <div className="flex items-baseline gap-2.5">
+              <span className="font-mono text-xs font-semibold uppercase tracking-[0.08em] text-accent-primary">
+                PL-30 //
+              </span>
+              <h1 className="font-display text-xl font-bold tracking-[-0.03em] text-ink-primary">
+                PulseLedger
+              </h1>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold tracking-tight text-slate-100">
-                  PulseLedger
-                </h1>
-                <Badge variant="emerald" className="font-mono text-[10px]">
-                  30-Day Triage
-                </Badge>
-              </div>
-              <p className="text-xs text-slate-400">
-                Plain-English Cashflow Parser &amp; Real-Time What-If Simulator
-              </p>
-            </div>
+            <span className="hidden h-3 w-[1px] bg-rule-hairline sm:inline-block" />
+            <p className="type-micro-label text-ink-secondary">
+              PLAIN-ENGLISH CASHFLOW PARSER &amp; 30-DAY BURN SIMULATOR
+            </p>
           </div>
 
-          {ledger && (
-            <div className="flex items-center gap-2">
-              <Badge
-                variant="default"
-                className="hidden font-mono text-[10px] text-slate-400 sm:inline-flex"
-              >
-                <HardDrive className="h-3 w-3 text-emerald-400" />
-                Saved in Browser
-              </Badge>
-              <Badge
-                variant={ledger.parserSource === "ai" ? "emerald" : "default"}
-                className="font-mono text-[11px]"
-              >
-                {ledger.parserSource === "ai" ? (
-                  <>
-                    <Sparkles className="h-3 w-3 text-emerald-400" />
-                    AI Extracted
-                  </>
-                ) : (
-                  <>
-                    <Cpu className="h-3 w-3 text-slate-400" />
-                    Fallback Parser
-                  </>
-                )}
-              </Badge>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {ledger ? (
+              <>
+                <Badge variant="default" className="hidden sm:inline-flex">
+                  LOCALSTORAGE SYNCED
+                </Badge>
+                <Badge
+                  variant={ledger.parserSource === "ai" ? "emerald" : "default"}
+                >
+                  {ledger.parserSource === "ai"
+                    ? "ENGINE: AI EXTRACTED"
+                    : "ENGINE: DETERMINISTIC PARSER"}
+                </Badge>
+              </>
+            ) : (
+              <Badge variant="default">STATUS: STANDBY</Badge>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* Main Two-Column Workspace */}
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          {/* Left Column: Brain-Dump Input Panel */}
-          <div className="lg:col-span-4">
+      {/* Main 12-Column Asymmetric Triage Workbench */}
+      <main className="mx-auto max-w-[1380px] px-4 py-6 sm:px-6">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+          {/* Left Rail (4 Columns, Sticky): Raw Statement Intake Console */}
+          <div className="lg:sticky lg:top-5 lg:col-span-4">
             <InputPanel
               rawInput={rawInput}
               onRawInputChange={handleRawInputChange}
@@ -274,44 +260,56 @@ export default function PulseLedgerPage() {
             />
           </div>
 
-          {/* Right Column: Interactive Dashboard */}
+          {/* Right Stage (8 Columns): Asymmetric Triage & Simulation Ledger */}
           <div className="lg:col-span-8">
             {!ledger || !metrics ? (
-              <ReadyEmptyState />
+              <div className="animate-ledger-reveal stagger-1">
+                <ReadyEmptyState />
+              </div>
             ) : (
-              <div className="space-y-5">
-                {metrics.isExpenseOnlyMode && (
-                  <ExpenseOnlyBanner
+              <div className="space-y-6">
+                {/* Orchestrated Entrance Block 1 (0ms delay): Primary Triage & Allocation */}
+                <div className="animate-ledger-reveal stagger-1 space-y-4">
+                  {metrics.isExpenseOnlyMode && (
+                    <ExpenseOnlyBanner
+                      currencySymbol={ledger.currencySymbol}
+                      onUpdateMonthlyIncome={handleUpdateMonthlyIncome}
+                    />
+                  )}
+
+                  <div>
+                    <TopMetricStrip
+                      metrics={metrics}
+                      monthlyIncome={ledger.monthlyIncome}
+                      currencySymbol={ledger.currencySymbol}
+                      onUpdateMonthlyIncome={handleUpdateMonthlyIncome}
+                    />
+                    <ProportionBar
+                      metrics={metrics}
+                      currencySymbol={ledger.currencySymbol}
+                    />
+                  </div>
+                </div>
+
+                {/* Orchestrated Entrance Block 2 (40ms delay): Unified Category Statement */}
+                <div className="animate-ledger-reveal stagger-2">
+                  <CategoryLedger
+                    items={ledger.items}
                     currencySymbol={ledger.currencySymbol}
-                    onUpdateMonthlyIncome={handleUpdateMonthlyIncome}
+                    adjustedItemsCount={metrics.adjustedItemsCount}
+                    onSliderChange={handleSliderChange}
+                    onResetSliders={handleResetSliders}
                   />
-                )}
+                </div>
 
-                <TopMetricStrip
-                  metrics={metrics}
-                  monthlyIncome={ledger.monthlyIncome}
-                  currencySymbol={ledger.currencySymbol}
-                  onUpdateMonthlyIncome={handleUpdateMonthlyIncome}
-                />
-
-                <ProportionBar
-                  metrics={metrics}
-                  currencySymbol={ledger.currencySymbol}
-                />
-
-                <CategoryLedger
-                  items={ledger.items}
-                  currencySymbol={ledger.currencySymbol}
-                  adjustedItemsCount={metrics.adjustedItemsCount}
-                  onSliderChange={handleSliderChange}
-                  onResetSliders={handleResetSliders}
-                />
-
-                <ActionPlanBar
-                  ledger={ledger}
-                  metrics={metrics}
-                  onResetSliders={handleResetSliders}
-                />
+                {/* Orchestrated Entrance Block 3 (80ms delay): Action Plan Sign-Off Bar */}
+                <div className="animate-ledger-reveal stagger-3">
+                  <ActionPlanBar
+                    ledger={ledger}
+                    metrics={metrics}
+                    onResetSliders={handleResetSliders}
+                  />
+                </div>
               </div>
             )}
           </div>

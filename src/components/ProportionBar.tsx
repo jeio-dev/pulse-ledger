@@ -21,105 +21,114 @@ export function ProportionBar({ metrics, currencySymbol }: ProportionBarProps) {
   } = metrics.proportion;
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/90 p-4">
-      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300">
-            Cashflow Allocation Split
-          </h3>
+    <div className="border-x border-b border-rule-hairline bg-paper-sheet">
+      {/* Allocation Header */}
+      <div className="flex flex-wrap items-center justify-between gap-2 px-5 pt-4 pb-2.5">
+        <div className="flex items-center gap-2.5">
+          <span className="type-micro-label text-ink-secondary">
+            CASHFLOW ALLOCATION DISTRIBUTION
+          </span>
           {isDeficitBar && (
-            <Badge variant="rose" className="font-mono text-[10px]">
-              <AlertTriangle className="h-2.5 w-2.5" />
-              Spend Exceeds Income by{" "}
+            <Badge variant="rose">
+              <AlertTriangle className="h-3 w-3" />
+              OVERRUN BY{" "}
               {formatCurrency(Math.abs(metrics.simulatedSurplus), currencySymbol)}
             </Badge>
           )}
         </div>
-        <span className="font-mono text-[11px] tabular-nums text-slate-400">
+        <span className="type-micro-label tabular-nums text-ink-muted">
           {isDeficitBar || metrics.isExpenseOnlyMode
-            ? "% of Simulated Total Spend"
-            : "% of Monthly Income"}
+            ? "BASIS: % OF SIMULATED SPEND"
+            : "BASIS: % OF MONTHLY INCOME"}
         </span>
       </div>
 
-      {/* Horizontal Stacked Bar */}
-      <div className="flex h-3.5 w-full overflow-hidden rounded-full bg-slate-950 p-0.5 border border-slate-800">
-        {essentialPct > 0 && (
-          <div
-            style={{ width: `${essentialPct}%` }}
-            className="h-full bg-slate-500 transition-all duration-75 first:rounded-l-full last:rounded-r-full"
-            title={`Fixed Essentials: ${essentialPct.toFixed(1)}%`}
-          />
-        )}
-        {flexiblePct > 0 && (
-          <div
-            style={{ width: `${flexiblePct}%` }}
-            className="h-full bg-sky-500 transition-all duration-75 first:rounded-l-full last:rounded-r-full"
-            title={`Flexible Living: ${flexiblePct.toFixed(1)}%`}
-          />
-        )}
-        {wantPct > 0 && (
-          <div
-            style={{ width: `${wantPct}%` }}
-            className="h-full bg-violet-500 transition-all duration-75 first:rounded-l-full last:rounded-r-full"
-            title={`Discretionary Wants: ${wantPct.toFixed(1)}%`}
-          />
-        )}
-        {surplusPct > 0 && (
-          <div
-            style={{ width: `${surplusPct}%` }}
-            className="h-full bg-emerald-500 transition-all duration-75 first:rounded-l-full last:rounded-r-full"
-            title={`Remaining Surplus: ${surplusPct.toFixed(1)}%`}
-          />
-        )}
+      {/* Horizontal Segmented Solid-Block Bar (Zero Gradients, 2px Structural Gaps) */}
+      <div className="px-5 pb-4">
+        <div className="flex h-3 w-full gap-0.5 border border-rule-hairline bg-paper-base p-0.5">
+          {essentialPct > 0 && (
+            <div
+              style={{ width: `${essentialPct}%` }}
+              className="h-full bg-ink-muted"
+              title={`01 Fixed Essentials: ${essentialPct.toFixed(1)}%`}
+            />
+          )}
+          {flexiblePct > 0 && (
+            <div
+              style={{ width: `${flexiblePct}%` }}
+              className="h-full bg-ink-secondary"
+              title={`02 Flexible Living: ${flexiblePct.toFixed(1)}%`}
+            />
+          )}
+          {wantPct > 0 && (
+            <div
+              style={{ width: `${wantPct}%` }}
+              className="h-full bg-ink-primary"
+              title={`03 Discretionary Wants: ${wantPct.toFixed(1)}%`}
+            />
+          )}
+          {surplusPct > 0 && (
+            <div
+              style={{ width: `${surplusPct}%` }}
+              className="h-full bg-accent-primary"
+              title={`04 Net Surplus: ${surplusPct.toFixed(1)}%`}
+            />
+          )}
+        </div>
       </div>
 
-      {/* Legend */}
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
-        <div className="flex items-center justify-between rounded-lg border border-slate-800/80 bg-slate-950/50 px-2.5 py-1.5">
-          <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-slate-500" />
-            <span className="text-slate-300">Essentials</span>
+      {/* 4-Column Structural Hairline Legend */}
+      <div className="grid grid-cols-2 divide-x divide-y divide-rule-hairline border-t border-rule-hairline bg-paper-base font-mono text-xs tabular-nums sm:grid-cols-4 sm:divide-y-0">
+        <div className="flex items-center justify-between px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 bg-ink-muted" />
+            <span className="text-[11px] uppercase text-ink-secondary">
+              01 Essentials
+            </span>
           </div>
-          <span className="font-mono font-medium tabular-nums text-slate-200">
+          <span className="font-semibold text-ink-primary">
             {essentialPct.toFixed(0)}%
           </span>
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-slate-800/80 bg-slate-950/50 px-2.5 py-1.5">
-          <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-sky-500" />
-            <span className="text-slate-300">Flexible</span>
+        <div className="flex items-center justify-between px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 bg-ink-secondary" />
+            <span className="text-[11px] uppercase text-ink-secondary">
+              02 Flexible
+            </span>
           </div>
-          <span className="font-mono font-medium tabular-nums text-sky-400">
+          <span className="font-semibold text-ink-primary">
             {flexiblePct.toFixed(0)}%
           </span>
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-slate-800/80 bg-slate-950/50 px-2.5 py-1.5">
-          <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-violet-500" />
-            <span className="text-slate-300">Wants</span>
+        <div className="flex items-center justify-between px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 bg-ink-primary" />
+            <span className="text-[11px] uppercase text-ink-secondary">
+              03 Wants
+            </span>
           </div>
-          <span className="font-mono font-medium tabular-nums text-violet-400">
+          <span className="font-semibold text-ink-primary">
             {wantPct.toFixed(0)}%
           </span>
         </div>
 
-        <div className="flex items-center justify-between rounded-lg border border-slate-800/80 bg-slate-950/50 px-2.5 py-1.5">
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-between px-4 py-2.5">
+          <div className="flex items-center gap-2">
             <span
-              className={`h-2.5 w-2.5 rounded-sm ${
-                isDeficitBar ? "bg-rose-500" : "bg-emerald-500"
+              className={`h-2.5 w-2.5 ${
+                isDeficitBar ? "bg-status-deficit" : "bg-accent-primary"
               }`}
             />
-            <span className="text-slate-300">
-              {isDeficitBar ? "Deficit" : "Surplus"}
+            <span className="text-[11px] uppercase text-ink-secondary">
+              04 {isDeficitBar ? "Deficit" : "Surplus"}
             </span>
           </div>
           <span
-            className={`font-mono font-medium tabular-nums ${
-              isDeficitBar ? "text-rose-400" : "text-emerald-400"
+            className={`font-semibold ${
+              isDeficitBar ? "text-status-deficit" : "text-accent-primary"
             }`}
           >
             {isDeficitBar
