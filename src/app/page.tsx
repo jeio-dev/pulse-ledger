@@ -1,43 +1,34 @@
 "use client";
 
 import * as React from "react";
-import { Activity, Lock, Sparkles, Cpu } from "lucide-react";
+import { Activity, Sparkles, Cpu } from "lucide-react";
 import { InputPanel } from "@/components/InputPanel";
 import { ReadyEmptyState } from "@/components/ReadyEmptyState";
+import { ExpenseOnlyBanner } from "@/components/ExpenseOnlyBanner";
+import { TopMetricStrip } from "@/components/TopMetricStrip";
+import { ProportionBar } from "@/components/ProportionBar";
+import { CategoryLedger } from "@/components/CategoryLedger";
 import { Badge } from "@/components/ui/badge";
+import {
+  computeDerivedMetrics,
+  computeSimulatedAmount,
+  normalizeLedgerState,
+} from "@/lib/calculations";
 import {
   BudgetResponseSchema,
   type BudgetLedgerState,
-  type ExpenseCategory,
 } from "@/lib/schemas";
-import { formatCurrency } from "@/lib/utils";
-
-const CATEGORY_META: Record<
-  ExpenseCategory,
-  { title: string; subtitle: string; badgeVariant: "locked" | "sky" | "violet" }
-> = {
-  essential: {
-    title: "Fixed Essentials",
-    subtitle: "Locked obligations (Rent, Utilities, Debt, Insurance)",
-    badgeVariant: "locked",
-  },
-  flexible: {
-    title: "Flexible Living",
-    subtitle: "Adjustable necessities (Groceries, Transit, Supplies)",
-    badgeVariant: "sky",
-  },
-  want: {
-    title: "Discretionary Wants",
-    subtitle: "Adjustable lifestyle & dining leaks (0%–150% What-If)",
-    badgeVariant: "violet",
-  },
-};
 
 export default function PulseLedgerPage() {
   const [rawInput, setRawInput] = React.useState("");
   const [ledger, setLedger] = React.useState<BudgetLedgerState | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+
+  const metrics = React.useMemo(
+    () => (ledger ? computeDerivedMetrics(ledger) : null),
+    [ledger]
+  );
 
   const handleAnalyze = async (overrideInput?: string) => {
     const textToParse = (overrideInput ?? rawInput).trim();
@@ -69,17 +60,16 @@ export default function PulseLedgerPage() {
         return;
       }
 
-      const nextState: BudgetLedgerState = {
+      const nextState = normalizeLedgerState({
         rawInput: textToParse,
         monthlyIncome: parsed.data.monthlyIncome,
         currencySymbol: parsed.data.currencySymbol,
         parserSource: parsed.data.parserSource,
         items: parsed.data.items.map((item) => ({
           ...item,
-          sliderPercent: 100,
-          simulatedAmount: item.baselineAmount,
+          ...computeSimulatedAmount(item.category, item.baselineAmount, 100),
         })),
-      };
+      });
 
       setLedger(nextState);
     } catch {
@@ -90,6 +80,54 @@ export default function PulseLedgerPage() {
       setIsLoading(false);
     }
   };
+
+  const handleSliderChange = React.useCallback(
+    (itemId: string, newPercent: number) => {
+      setLedger((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          items: prev.items.map((item) => {
+            if (item.id !== itemId) return item;
+            const { sliderPercent, simulatedAmount } = computeSimulatedAmount(
+              item.category,
+              item.baselineAmount,
+              newPercent
+            );
+            return {
+              ...item,
+              sliderPercent,
+              simulatedAmount,
+            };
+          }),
+        };
+      });
+    },
+    []
+  );
+
+  const handleResetSliders = React.useCallback(() => {
+    setLedger((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        items: prev.items.map((item) => ({
+          ...item,
+          ...computeSimulatedAmount(item.category, item.baselineAmount, 100),
+        })),
+      };
+    });
+  }, []);
+
+  const handleUpdateMonthlyIncome = React.useCallback((income: number) => {
+    setLedger((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        monthlyIncome: Math.max(0, Math.round(income)),
+      };
+    });
+  }, []);
 
   const handleClearAll = () => {
     setRawInput("");
@@ -165,121 +203,36 @@ export default function PulseLedgerPage() {
 
           {/* Right Column: Interactive Dashboard */}
           <div className="lg:col-span-8">
-            {!ledger ? (
+            {!ledger || !metrics ? (
               <ReadyEmptyState />
             ) : (
               <div className="space-y-5">
-                {/* Parsed Monthly Income & Baseline Summary Strip */}
-                <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/90 p-4">
-                  <div>
-                    <span className="text-xs font-medium text-slate-400">
-                      Extracted Monthly Income
-                    </span>
-                    <div className="mt-0.5 font-mono text-2xl font-bold tabular-nums tracking-tight text-slate-100">
-                      {formatCurrency(
-                        ledger.monthlyIncome,
-                        ledger.currencySymbol
-                      )}
-                      <span className="ml-1 text-xs font-normal text-slate-400">
-                        /mo
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs font-medium text-slate-400">
-                      Parsed Line Items
-                    </span>
-                    <div className="mt-0.5 font-mono text-lg font-semibold tabular-nums text-emerald-400">
-                      {ledger.items.length} items across 3 buckets
-                    </div>
-                  </div>
-                </div>
-
-                {/* Categorized Expense Groups */}
-                {(["essential", "flexible", "want"] as const).map(
-                  (category) => {
-                    const groupItems = ledger.items.filter(
-                      (i) => i.category === category
-                    );
-                    const subtotal = groupItems.reduce(
-                      (sum, item) => sum + item.simulatedAmount,
-                      0
-                    );
-                    const meta = CATEGORY_META[category];
-
-                    return (
-                      <div
-                        key={category}
-                        className="rounded-xl border border-slate-800 bg-slate-900/90 overflow-hidden"
-                      >
-                        <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/50 px-4 py-3">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="text-sm font-semibold text-slate-100">
-                                {meta.title}
-                              </h3>
-                              <Badge
-                                variant={meta.badgeVariant}
-                                className="font-mono text-[10px]"
-                              >
-                                {groupItems.length} items
-                              </Badge>
-                            </div>
-                            <p className="text-[11px] text-slate-400">
-                              {meta.subtitle}
-                            </p>
-                          </div>
-                          <div className="font-mono text-sm font-semibold tabular-nums text-slate-100">
-                            {formatCurrency(subtotal, ledger.currencySymbol)}
-                          </div>
-                        </div>
-
-                        {groupItems.length === 0 ? (
-                          <div className="px-4 py-4 text-xs text-slate-500">
-                            No items parsed in this category.
-                          </div>
-                        ) : (
-                          <div className="divide-y divide-slate-800/80">
-                            {groupItems.map((item) => (
-                              <div
-                                key={item.id}
-                                className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-slate-900/60"
-                              >
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-sm font-medium text-slate-100">
-                                      {item.label}
-                                    </span>
-                                    {item.category === "essential" && (
-                                      <Badge
-                                        variant="locked"
-                                        className="font-mono text-[10px]"
-                                      >
-                                        <Lock className="h-2.5 w-2.5" />
-                                        Locked
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  {item.aiTip && (
-                                    <p className="mt-0.5 text-xs text-slate-400">
-                                      {item.aiTip}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="font-mono text-sm font-semibold tabular-nums text-slate-100">
-                                  {formatCurrency(
-                                    item.simulatedAmount,
-                                    ledger.currencySymbol
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  }
+                {metrics.isExpenseOnlyMode && (
+                  <ExpenseOnlyBanner
+                    currencySymbol={ledger.currencySymbol}
+                    onUpdateMonthlyIncome={handleUpdateMonthlyIncome}
+                  />
                 )}
+
+                <TopMetricStrip
+                  metrics={metrics}
+                  monthlyIncome={ledger.monthlyIncome}
+                  currencySymbol={ledger.currencySymbol}
+                  onUpdateMonthlyIncome={handleUpdateMonthlyIncome}
+                />
+
+                <ProportionBar
+                  metrics={metrics}
+                  currencySymbol={ledger.currencySymbol}
+                />
+
+                <CategoryLedger
+                  items={ledger.items}
+                  currencySymbol={ledger.currencySymbol}
+                  adjustedItemsCount={metrics.adjustedItemsCount}
+                  onSliderChange={handleSliderChange}
+                  onResetSliders={handleResetSliders}
+                />
               </div>
             )}
           </div>
