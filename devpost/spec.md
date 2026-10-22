@@ -89,6 +89,7 @@ PRD ref: `prd.md > The Core Journey`.
   ```
 - **Demo Recording Flow:** Open `http://localhost:3000`, click the **Post-Payday Squeeze** preset pill, click **Analyze Cashflow**, drag two non-fixed sliders down to watch the **Safe Daily Allowance vs. Actual Daily Spend** badge flip from `Rose` to `Emerald` alongside the 1-year projected savings callout, and click **Copy Action Plan**.
 - **Hackathon Submission Requirement:** Submission requires **both a short demo video and a public GitHub repository**. Deployment is optional and does not replace the demo video.
+- **Public GitHub Repository:** `https://github.com/jeio-dev/pulse-ledger`
 - **Optional Deployment Target (`6-ship`):** [Vercel](https://vercel.com/docs) (import the public GitHub repository, optionally add `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` in Project Settings -> Environment Variables, and deploy with default Next.js settings; even without env vars configured on Vercel, the deterministic fallback parser keeps the live URL 100% functional).
 
 ---
