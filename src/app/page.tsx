@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Activity, Sparkles, Cpu } from "lucide-react";
+import { Activity, Sparkles, Cpu, HardDrive } from "lucide-react";
 import { InputPanel } from "@/components/InputPanel";
 import { ReadyEmptyState } from "@/components/ReadyEmptyState";
 import { ExpenseOnlyBanner } from "@/components/ExpenseOnlyBanner";
 import { TopMetricStrip } from "@/components/TopMetricStrip";
 import { ProportionBar } from "@/components/ProportionBar";
 import { CategoryLedger } from "@/components/CategoryLedger";
+import { ActionPlanBar } from "@/components/ActionPlanBar";
 import { Badge } from "@/components/ui/badge";
 import {
   computeDerivedMetrics,
@@ -15,19 +16,82 @@ import {
   normalizeLedgerState,
 } from "@/lib/calculations";
 import {
+  BudgetLedgerStateSchema,
   BudgetResponseSchema,
   type BudgetLedgerState,
 } from "@/lib/schemas";
 
+const STORAGE_KEY = "pulse_ledger_state";
+
+function parseSavedLedgerState(
+  rawJson: string | null
+): BudgetLedgerState | null {
+  if (!rawJson) return null;
+  try {
+    const parsed = JSON.parse(rawJson);
+    const validated = BudgetLedgerStateSchema.safeParse(parsed);
+    if (!validated.success) {
+      return null;
+    }
+    return normalizeLedgerState(validated.data);
+  } catch {
+    return null;
+  }
+}
+
 export default function PulseLedgerPage() {
   const [rawInput, setRawInput] = React.useState("");
   const [ledger, setLedger] = React.useState<BudgetLedgerState | null>(null);
+  const [isHydrated, setIsHydrated] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
+
+  // Hydrate workspace from localStorage["pulse_ledger_state"] on mount
+  React.useEffect(() => {
+    try {
+      const savedRaw = window.localStorage.getItem(STORAGE_KEY);
+      if (savedRaw) {
+        const restored = parseSavedLedgerState(savedRaw);
+        if (restored) {
+          setLedger(restored);
+          setRawInput(restored.rawInput);
+        } else {
+          window.localStorage.removeItem(STORAGE_KEY);
+        }
+      }
+    } catch {
+      // Ignore storage access errors in restricted environments
+    } finally {
+      setIsHydrated(true);
+    }
+  }, []);
+
+  // Persist active ledger state to localStorage["pulse_ledger_state"]
+  React.useEffect(() => {
+    if (!isHydrated) return;
+    try {
+      if (ledger) {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(ledger));
+      } else {
+        window.localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch {
+      // Ignore storage quota errors
+    }
+  }, [ledger, isHydrated]);
 
   const metrics = React.useMemo(
     () => (ledger ? computeDerivedMetrics(ledger) : null),
     [ledger]
+  );
+
+  const handleRawInputChange = React.useCallback(
+    (nextValue: string) => {
+      setRawInput(nextValue);
+      if (errorMessage) setErrorMessage(null);
+      setLedger((prev) => (prev ? { ...prev, rawInput: nextValue } : null));
+    },
+    [errorMessage]
   );
 
   const handleAnalyze = async (overrideInput?: string) => {
@@ -133,6 +197,11 @@ export default function PulseLedgerPage() {
     setRawInput("");
     setLedger(null);
     setErrorMessage(null);
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Ignore
+    }
   };
 
   return (
@@ -162,6 +231,13 @@ export default function PulseLedgerPage() {
           {ledger && (
             <div className="flex items-center gap-2">
               <Badge
+                variant="default"
+                className="hidden font-mono text-[10px] text-slate-400 sm:inline-flex"
+              >
+                <HardDrive className="h-3 w-3 text-emerald-400" />
+                Saved in Browser
+              </Badge>
+              <Badge
                 variant={ledger.parserSource === "ai" ? "emerald" : "default"}
                 className="font-mono text-[11px]"
               >
@@ -189,10 +265,7 @@ export default function PulseLedgerPage() {
           <div className="lg:col-span-4">
             <InputPanel
               rawInput={rawInput}
-              onRawInputChange={(val) => {
-                setRawInput(val);
-                if (errorMessage) setErrorMessage(null);
-              }}
+              onRawInputChange={handleRawInputChange}
               onAnalyze={handleAnalyze}
               onClearAll={handleClearAll}
               isLoading={isLoading}
@@ -231,6 +304,12 @@ export default function PulseLedgerPage() {
                   currencySymbol={ledger.currencySymbol}
                   adjustedItemsCount={metrics.adjustedItemsCount}
                   onSliderChange={handleSliderChange}
+                  onResetSliders={handleResetSliders}
+                />
+
+                <ActionPlanBar
+                  ledger={ledger}
+                  metrics={metrics}
                   onResetSliders={handleResetSliders}
                 />
               </div>

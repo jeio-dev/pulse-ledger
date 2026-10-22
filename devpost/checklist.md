@@ -45,7 +45,7 @@ Build mode: fast
   Learner check: Open `http://localhost:3000`, analyze **Post-Payday Squeeze**, drag two non-fixed sliders down to watch the **Safe Daily Allowance vs. Actual Daily Spend** badge flip from `Rose` to `Emerald` and the 1-year savings projection climb in real time, confirm `Fixed Essentials` rows are locked, and test **Reset Sliders** (plus entering inline income on an expense-only input).
   Commit: `Add live What-If sliders, 30-day KPI cards, proportion bar, and expense-only banner`
 
-- [ ] **3. Copy the 5-part Markdown Action Plan and persist the workspace across browser reloads**
+- [x] **3. Copy the 5-part Markdown Action Plan and persist the workspace across browser reloads**
   Becomes usable: Clicking **Copy Action Plan** in the bottom bar copies the formatted 5-part Markdown budget summary and `- [ ]` target-cut checklist to your clipboard with a `"Copied!"` confirmation state; reloading the browser restores your active input, parsed ledger, and slider positions from `localStorage["pulse_ledger_state"]`; and clicking **Clear All** wipes storage and returns to the **Ready to Analyze** empty state.
   Why now: Completes Step 6 of the core journey and wires up `localStorage` persistence once the `BudgetLedgerState` schema and slider calculations are locked in.
   PRD ref: `prd.md > The Core Journey` (Step 6), `prd.md > 5. Copy Action Plan & Workspace Persistence`, `prd.md > States and Boundaries`
@@ -57,7 +57,7 @@ Build mode: fast
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after Slice 2 (brain-dump parsing + live What-If slider simulation & KPI cards)
+- [x] Early usable behavior explored — after Slice 2 (brain-dump parsing + live What-If slider simulation & KPI cards)
 - [ ] Final kick-the-tires exploration and feedback completed — after Slice 3 (full core journey with Markdown export & persistence)
 
 ## Final Review
