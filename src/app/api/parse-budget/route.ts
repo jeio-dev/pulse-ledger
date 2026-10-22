@@ -1,13 +1,21 @@
 import { NextResponse } from "next/server";
-import { hasRecognizableCurrencyAmount, parseWithFallback } from "@/lib/fallback-parser";
-import { BudgetResponseSchema, ParseBudgetRequestSchema, type BudgetResponse } from "@/lib/schemas";
+import {
+  detectCurrencySymbol,
+  hasRecognizableCurrencyAmount,
+  parseWithFallback,
+} from "@/lib/fallback-parser";
+import {
+  BudgetResponseSchema,
+  ParseBudgetRequestSchema,
+  type BudgetResponse,
+} from "@/lib/schemas";
 
 const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 
 const SYSTEM_PROMPT = `Extract monthly cashflow into strict JSON matching:
 {
   "monthlyIncome": number,
-  "currencySymbol": "$",
+  "currencySymbol": string,
   "items": [
     {
       "id": string,
@@ -18,9 +26,13 @@ const SYSTEM_PROMPT = `Extract monthly cashflow into strict JSON matching:
     }
   ]
 }
-Classify fixed obligations (rent, mortgage, utilities, insurance, minimum debt, transit pass) as "essential", variable necessities (groceries, gas, rideshares, household supplies) as "flexible", and lifestyle/dining/subscriptions/shopping as "want". Keep each "aiTip" concise (under 12 words). If no income is mentioned, set monthlyIncome to 0. Return ONLY valid JSON with no markdown fences or extra commentary.`;
+For "currencySymbol", detect the currency from the user text: use "₱" for Philippine Peso (PHP, peso, pesos, ph peso, P, ₱), "€" for Euro, "£" for GBP, "¥" for JPY, "₹" for INR, or default to "$".
+Classify fixed obligations (rent, mortgage, utilities, electric, water, internet, insurance, minimum debt, transit pass) as "essential", variable necessities (groceries, gas, rideshares/Grab, household supplies) as "flexible", and lifestyle/dining/takeout/coffee/subscriptions/shopping as "want". Keep each "aiTip" concise (under 12 words) and use the detected currency symbol when mentioning amounts. If no income is mentioned, set monthlyIncome to 0. Return ONLY valid JSON with no markdown fences or extra commentary.`;
 
-function extractValidatedAiBudget(rawContent: string): BudgetResponse | null {
+function extractValidatedAiBudget(
+  rawContent: string,
+  rawInput: string
+): BudgetResponse | null {
   try {
     const cleaned = rawContent
       .replace(/^```(?:json)?\s*/i, "")
@@ -34,6 +46,13 @@ function extractValidatedAiBudget(rawContent: string): BudgetResponse | null {
     }
 
     const parsedJson = JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
+
+    const resolvedSymbol = detectCurrencySymbol(
+      rawInput,
+      typeof parsedJson?.currencySymbol === "string"
+        ? parsedJson.currencySymbol
+        : undefined
+    );
 
     if (Array.isArray(parsedJson?.items)) {
       parsedJson.items = parsedJson.items.map(
@@ -56,6 +75,7 @@ function extractValidatedAiBudget(rawContent: string): BudgetResponse | null {
 
     const validated = BudgetResponseSchema.safeParse({
       ...parsedJson,
+      currencySymbol: resolvedSymbol,
       parserSource: "ai",
     });
 
@@ -112,7 +132,7 @@ async function callOpenRouterModel(
     throw new Error("Empty OpenRouter message content");
   }
 
-  const validated = extractValidatedAiBudget(rawContent);
+  const validated = extractValidatedAiBudget(rawContent, rawInput);
   if (!validated) {
     throw new Error("OpenRouter JSON failed schema validation");
   }
@@ -142,7 +162,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "No dollar amounts detected. Include numbers like '$2,600 income, $1,150 rent' or click a preset pill above.",
+            "No currency amounts detected. Include numbers like '$2,600 income, $1,150 rent' or '₱45,000 income, ₱12,000 rent'.",
         },
         { status: 422 }
       );
