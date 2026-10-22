@@ -28,9 +28,9 @@ const fontMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PulseLedger — Form PL-30 // 30-Day Cashflow Triage & Simulation Ledger",
+  title: "PulseLedger — 30-Day Cashflow & What-If Simulator",
   description:
-    "Turn a messy plain-English monthly cashflow statement into structured accounting buckets, Safe Daily Allowance vs. Actual Daily Burn, and live What-If expense sliders.",
+    "Turn a plain-English monthly cashflow summary into structured categories, Safe Daily Limit vs. Actual Burn, and live What-If expense sliders.",
 };
 
 export default function RootLayout({

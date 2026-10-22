@@ -205,47 +205,30 @@ export default function PulseLedgerPage() {
 
   return (
     <div className="min-h-screen bg-paper-base text-ink-primary">
-      {/* Architectural Masthead Strip */}
+      {/* Header */}
       <header className="border-b border-rule-hairline bg-paper-sheet">
-        <div className="mx-auto flex max-w-[1380px] flex-wrap items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
-          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <div className="flex items-baseline gap-2.5">
-              <span className="font-mono text-xs font-semibold uppercase tracking-[0.08em] text-accent-primary">
-                PL-30 //
-              </span>
-              <h1 className="font-display text-xl font-bold tracking-[-0.03em] text-ink-primary">
-                PulseLedger
-              </h1>
-            </div>
-            <span className="hidden h-3 w-[1px] bg-rule-hairline sm:inline-block" />
-            <p className="type-micro-label text-ink-secondary">
-              PLAIN-ENGLISH CASHFLOW PARSER &amp; 30-DAY BURN SIMULATOR
-            </p>
+        <div className="mx-auto flex max-w-[1320px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <div className="flex items-baseline gap-3">
+            <h1 className="font-display text-lg font-bold tracking-[-0.02em] text-ink-primary">
+              PulseLedger
+            </h1>
+            <span className="hidden text-xs text-ink-muted sm:inline">
+              30-Day Cashflow Simulator
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            {ledger ? (
-              <>
-                <Badge variant="default" className="hidden sm:inline-flex">
-                  LOCALSTORAGE SYNCED
-                </Badge>
-                <Badge
-                  variant={ledger.parserSource === "ai" ? "emerald" : "default"}
-                >
-                  {ledger.parserSource === "ai"
-                    ? "ENGINE: AI EXTRACTED"
-                    : "ENGINE: DETERMINISTIC PARSER"}
-                </Badge>
-              </>
-            ) : (
-              <Badge variant="default">STATUS: STANDBY</Badge>
-            )}
-          </div>
+          {ledger && (
+            <Badge
+              variant={ledger.parserSource === "ai" ? "emerald" : "default"}
+            >
+              {ledger.parserSource === "ai" ? "AI Parsed" : "Fallback Parser"}
+            </Badge>
+          )}
         </div>
       </header>
 
-      {/* Main 12-Column Asymmetric Triage Workbench */}
-      <main className="mx-auto max-w-[1380px] px-4 py-6 sm:px-6">
+      {/* Main Two-Column Workspace */}
+      <main className="mx-auto max-w-[1320px] px-4 py-6 sm:px-6">
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
           {/* Left Rail (4 Columns, Sticky): Raw Statement Intake Console */}
           <div className="lg:sticky lg:top-5 lg:col-span-4">

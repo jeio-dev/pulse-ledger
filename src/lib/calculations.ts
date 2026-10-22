@@ -150,34 +150,34 @@ export function computeDerivedMetrics(
 
   // Traffic-light semantic badge logic
   let surplusStatus: SemanticStatus = "amber";
-  let surplusStatusLabel = "Tight Margin";
+  let surplusStatusLabel = "Tight";
 
   if (isExpenseOnlyMode) {
     surplusStatus = "amber";
-    surplusStatusLabel = "Income Needed";
+    surplusStatusLabel = "Add Income";
   } else if (simulatedSurplus < 0) {
     surplusStatus = "rose";
-    surplusStatusLabel = "Monthly Deficit";
+    surplusStatusLabel = "Deficit";
   } else if (monthlyIncome > 0 && simulatedSurplus >= monthlyIncome * 0.1) {
     surplusStatus = "emerald";
-    surplusStatusLabel = "Healthy Surplus";
+    surplusStatusLabel = "Surplus";
   } else {
     surplusStatus = "amber";
-    surplusStatusLabel = "Tight Margin (<10%)";
+    surplusStatusLabel = "Tight";
   }
 
   let dailyBurnStatus: SemanticStatus = "emerald";
-  let dailyBurnStatusLabel = "Within Safe Daily Limit";
+  let dailyBurnStatusLabel = "Safe Pace";
 
   if (isExpenseOnlyMode) {
     dailyBurnStatus = "amber";
-    dailyBurnStatusLabel = "Set Income for Safe Limit";
+    dailyBurnStatusLabel = "Add Income";
   } else if (simulatedDailySpend <= safeDailyAllowance) {
     dailyBurnStatus = "emerald";
-    dailyBurnStatusLabel = "Safe Daily Pace";
+    dailyBurnStatusLabel = "Safe Pace";
   } else {
     dailyBurnStatus = "rose";
-    dailyBurnStatusLabel = "Overspending Daily Limit";
+    dailyBurnStatusLabel = "Over Limit";
   }
 
   // Proportion bar percentages
