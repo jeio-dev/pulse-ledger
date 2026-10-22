@@ -58,22 +58,25 @@ Build mode: fast
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after Slice 2 (brain-dump parsing + live What-If slider simulation & KPI cards)
-- [ ] Final kick-the-tires exploration and feedback completed — after Slice 3 (full core journey with Markdown export & persistence)
+- [x] Final kick-the-tires exploration and feedback completed — after Slice 3 (full core journey with Markdown export & persistence)
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] No revisions requested during final kick-the-tires review — all 3 slices verified and confirmed ready
+- [x] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [x] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
-Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
-Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
-Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
-Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+Activity and evidence: Connected prior spec-to-schema-to-slice practice (`spec.md > Data Model > Synchronization Rule` and `spec.md > Decisions and Open Issues > Build-Time Scrutiny Items`) to actual build verification in `src/lib/calculations.ts` (`computeSimulatedAmount` clamping `"essential"` to `100%` across parse, slider, reset, and hydration) and `src/lib/fallback-parser.ts` (where Slice 1 verification caught `"after tax"` colliding with standalone `tax` in expense keywords, recorded under `## Revisions`).
+Route and stops: Reference route prepared in `devpost/app-map.html`: Stop 1 `src/lib/schemas.ts` (`ExpenseItemSchema`, `BudgetResponseSchema`, `BudgetLedgerStateSchema`) -> Stop 2 `src/lib/calculations.ts` (`computeSimulatedAmount`, `normalizeLedgerState`, `computeDerivedMetrics`) -> Stop 3 `src/app/page.tsx` & `src/components/CategoryLedger.tsx` (`handleSliderChange`, `parseSavedLedgerState`).
+Edit outcome: not applicable (prior spec-to-slice verification practice connected directly; pointers for future edits documented in `devpost/app-map.html`).
+Reflection: offered optional transfer question at wrap-up.
+Activity mode: prior practice connected + evidence-based recap and standalone `devpost/app-map.html` (verified paths/symbols against source at commit `eb92df4`; headless CLI environment without GUI browser).
 
 ## Revisions
+
+- Refined `src/lib/fallback-parser.ts` essential keyword rule (`property tax` instead of standalone `tax`) — Slice 1 verification discovered that income sentences phrased as `"I earn $3,800 a month after tax"` were matching `tax` as an expense keyword instead of monthly income.

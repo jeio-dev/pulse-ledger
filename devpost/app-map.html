@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseLedger — Architecture &amp; App Map</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #020617;
+      --panel: #0f172a;
+      --panel-alt: #1e293b;
+      --border: #1e293b;
+      --border-highlight: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --emerald: #34d399;
+      --emerald-bg: rgba(16, 185, 129, 0.12);
+      --sky: #38bdf8;
+      --violet: #a78bfa;
+      --amber: #fbbf24;
+      --rose: #fb7185;
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 2rem 1.25rem 4rem;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--emerald-bg);
+      color: var(--emerald);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    h1 {
+      margin: 0.35rem 0 0.25rem;
+      font-size: 1.65rem;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+      margin: 0 0 0.75rem;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      margin: 0 0 0.75rem;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.35rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.84rem;
+      background: rgba(2, 6, 23, 0.75);
+      border: 1px solid var(--border-highlight);
+      padding: 0.12rem 0.4rem;
+      border-radius: 4px;
+      color: #e2e8f0;
+    }
+
+    pre {
+      background: #020617;
+      border: 1px solid var(--border-highlight);
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: #e2e8f0;
+      margin: 0.5rem 0 0;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: rgba(2, 6, 23, 0.65);
+      border: 1px solid var(--border-highlight);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .route-stop {
+      border-left: 3px solid var(--emerald);
+      padding-left: 1rem;
+      margin-bottom: 1.15rem;
+    }
+
+    .route-stop:last-child {
+      margin-bottom: 0;
+    }
+
+    .stop-title {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .stop-meta {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--emerald);
+      margin: 0.15rem 0 0.35rem;
+    }
+
+    details {
+      background: rgba(2, 6, 23, 0.55);
+      border: 1px solid var(--border-highlight);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-top: 0.65rem;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--sky);
+    }
+
+    .diagram-wrap {
+      background: #020617;
+      border: 1px solid var(--border-highlight);
+      border-radius: 10px;
+      padding: 1rem;
+      overflow-x: auto;
+    }
+
+    ul {
+      margin: 0.4rem 0 0;
+      padding-left: 1.25rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    li {
+      margin-bottom: 0.45rem;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <span class="badge">PulseLedger · App Map</span>
+        <h1>PulseLedger Architecture &amp; Code Guide</h1>
+        <p style="margin:0;">Single-screen plain-English cashflow parser &amp; real-time What-If expense simulator.</p>
+      </div>
+      <div style="text-align: right; font-family: var(--mono); font-size: 0.78rem; color: var(--muted);">
+        <div>Snapshot commit: <code>eb92df4</code></div>
+        <div>Stack: Next.js 15 · React 19 · TS · Tailwind · Zod</div>
+      </div>
+    </header>
+
+    <!-- 1. Overview -->
+    <section>
+      <h2>1. Plain-Language Overview</h2>
+      <p>
+        PulseLedger turns a messy monthly cashflow paragraph into three structured expense buckets
+        (<code>Fixed Essentials</code>, <code>Flexible Living</code>, and <code>Discretionary Wants</code>),
+        calculates 30-day <strong>Safe Daily Allowance vs. Actual Daily Spend</strong>, and lets users drag
+        <code>0%–150%</code> What-If sliders on non-fixed expenses to watch their daily pace and 1-year projected savings
+        flip from deficit to surplus in real time.
+      </p>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Contract Layer (<code>src/lib/schemas.ts</code>)</h3>
+          <p style="margin:0;">
+            Single Zod source of truth (<code>BudgetResponseSchema</code>, <code>BudgetLedgerStateSchema</code>) shared across the API route, fallback parser, <code>localStorage</code> hydration, and React state.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Resilient Parser (<code>src/app/api/parse-budget/route.ts</code>)</h3>
+          <p style="margin:0;">
+            Calls OpenRouter with a 6-second timeout when <code>OPENROUTER_API_KEY</code> is set, and automatically falls back to deterministic preset/clause parsing in <code>src/lib/fallback-parser.ts</code>.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Zero-Latency Math (<code>src/lib/calculations.ts</code>)</h3>
+          <p style="margin:0;">
+            Enforces locked <code>100%</code> essentials via <code>computeSimulatedAmount</code> and derives 30-day daily burn, largest leak, and traffic-light badges via <code>computeDerivedMetrics</code>.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Interactive Workspace (<code>src/app/page.tsx</code>)</h3>
+          <p style="margin:0;">
+            Coordinates left-column input, right-column KPI cards, stacked proportion bar, slider ledger, 5-part Markdown export, and <code>localStorage["pulse_ledger_state"]</code> sync.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Action Diagram -->
+    <section>
+      <h2>2. How One Action Flows Through the App</h2>
+      <p>
+        Tracing a What-If slider drag (and initial cashflow parse) from user interaction to live UI and browser storage:
+      </p>
+      <div class="diagram-wrap">
+        <svg viewBox="0 0 860 220" width="100%" height="auto" role="img" aria-label="Flow diagram showing InputPanel to API Route, then CategoryLedger slider drag through computeSimulatedAmount and computeDerivedMetrics to TopMetricStrip, ProportionBar, ActionPlanBar, and localStorage">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#34d399" />
+            </marker>
+          </defs>
+
+          <!-- Box 1: Slider Input -->
+          <rect x="12" y="25" width="185" height="75" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+          <text x="24" y="48" fill="#f1f5f9" font-family="sans-serif" font-size="12" font-weight="bold">1. User Drags Slider</text>
+          <text x="24" y="66" fill="#38bdf8" font-family="monospace" font-size="10">CategoryLedger.tsx</text>
+          <text x="24" y="84" fill="#94a3b8" font-family="sans-serif" font-size="10">onSliderChange(id, 0–150%)</text>
+
+          <!-- Arrow 1 -> 2 -->
+          <line x1="197" y1="62" x2="235" y2="62" stroke="#34d399" stroke-width="1.75" marker-end="url(#arrow)" />
+
+          <!-- Box 2: Normalization & State -->
+          <rect x="240" y="25" width="205" height="75" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="1.5" />
+          <text x="252" y="48" fill="#f1f5f9" font-family="sans-serif" font-size="12" font-weight="bold">2. Normalize &amp; State Update</text>
+          <text x="252" y="66" fill="#34d399" font-family="monospace" font-size="10">calculations.ts · page.tsx</text>
+          <text x="252" y="84" fill="#94a3b8" font-family="sans-serif" font-size="10">computeSimulatedAmount()</text>
+
+          <!-- Arrow 2 -> 3 -->
+          <line x1="445" y1="62" x2="483" y2="62" stroke="#34d399" stroke-width="1.75" marker-end="url(#arrow)" />
+
+          <!-- Box 3: Derived Rollup -->
+          <rect x="488" y="25" width="185" height="75" rx="8" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5" />
+          <text x="500" y="48" fill="#f1f5f9" font-family="sans-serif" font-size="12" font-weight="bold">3. Synchronous Rollup</text>
+          <text x="500" y="66" fill="#a78bfa" font-family="monospace" font-size="10">useMemo in page.tsx</text>
+          <text x="500" y="84" fill="#94a3b8" font-family="sans-serif" font-size="10">computeDerivedMetrics()</text>
+
+          <!-- Arrow 3 -> 4 -->
+          <line x1="673" y1="62" x2="705" y2="62" stroke="#34d399" stroke-width="1.75" marker-end="url(#arrow)" />
+
+          <!-- Box 4: Visible Output -->
+          <rect x="710" y="18" width="138" height="90" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="1.5" />
+          <text x="722" y="40" fill="#f1f5f9" font-family="sans-serif" font-size="12" font-weight="bold">4. Live UI Output</text>
+          <text x="722" y="58" fill="#34d399" font-family="monospace" font-size="10">TopMetricStrip</text>
+          <text x="722" y="74" fill="#38bdf8" font-family="monospace" font-size="10">ProportionBar</text>
+          <text x="722" y="90" fill="#fbbf24" font-family="monospace" font-size="10">ActionPlanBar</text>
+
+          <!-- Storage & API Row -->
+          <rect x="240" y="135" width="205" height="62" rx="8" fill="#0f172a" stroke="#475569" stroke-width="1.2" />
+          <text x="252" y="158" fill="#f1f5f9" font-family="sans-serif" font-size="11" font-weight="bold">Browser Persistence</text>
+          <text x="252" y="176" fill="#94a3b8" font-family="monospace" font-size="10">localStorage["pulse_ledger_state"]</text>
+          <line x1="342" y1="100" x2="342" y2="132" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow)" />
+
+          <rect x="12" y="135" width="185" height="62" rx="8" fill="#0f172a" stroke="#475569" stroke-width="1.2" />
+          <text x="24" y="158" fill="#f1f5f9" font-family="sans-serif" font-size="11" font-weight="bold">Initial Parse (One-Time)</text>
+          <text x="24" y="176" fill="#94a3b8" font-family="monospace" font-size="10">POST /api/parse-budget</text>
+          <line x1="197" y1="166" x2="235" y2="85" stroke="#34d399" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arrow)" />
+        </svg>
+      </div>
+    </section>
+
+    <!-- 3. Reference Code Route -->
+    <section>
+      <h2>3. Three-Stop Code Reference Route</h2>
+      <p>
+        Use this reference route to trace the contract between Zod schemas, normalization math, and interactive UI:
+      </p>
+
+      <div class="route-stop">
+        <div class="stop-title">Stop 1 — The Zod Contract &amp; State Shape</div>
+        <div class="stop-meta">Path: <code>src/lib/schemas.ts</code> · Symbols: <code>ExpenseItemSchema</code>, <code>BudgetResponseSchema</code>, <code>BudgetLedgerStateSchema</code></div>
+        <p style="margin:0;">
+          Defines the three valid categories (<code>"essential" | "flexible" | "want"</code>), the API output contract, and the persisted client state shape.
+        </p>
+      </div>
+
+      <div class="route-stop">
+        <div class="stop-title">Stop 2 — Single-Source-of-Truth Normalization &amp; 30-Day Formulas</div>
+        <div class="stop-meta">Path: <code>src/lib/calculations.ts</code> · Symbols: <code>computeSimulatedAmount</code>, <code>normalizeLedgerState</code>, <code>computeDerivedMetrics</code></div>
+        <p style="margin:0;">
+          Clamps <code>"essential"</code> items to <code>100%</code> and rounds <code>simulatedAmount</code> in one function used by parsing, slider updates, reset, and storage hydration; computes <code>safeDailyAllowance</code>, <code>simulatedDailySpend</code>, <code>annualizedSavings</code>, and badge statuses.
+        </p>
+      </div>
+
+      <div class="route-stop">
+        <div class="stop-title">Stop 3 — Slider Scrubbing &amp; Workspace Persistence</div>
+        <div class="stop-meta">Path: <code>src/app/page.tsx</code> &amp; <code>src/components/CategoryLedger.tsx</code> · Symbols: <code>handleSliderChange</code>, <code>parseSavedLedgerState</code></div>
+        <p style="margin:0;">
+          Renders locked rows for <code>Fixed Essentials</code> and Radix <code>0%–150%</code> sliders for adjustable rows, updating React state and syncing <code>localStorage["pulse_ledger_state"]</code> without re-calling the API.
+        </p>
+      </div>
+    </section>
+
+    <!-- 4. To Change This, Start Here -->
+    <section>
+      <h2>4. “To Change This, Start Here” Pointers</h2>
+      <ul>
+        <li>
+          <strong>Add or edit a preset scenario pill:</strong> Open <code>src/lib/presets.ts</code> and edit <code>PRESET_SCENARIOS</code> (each entry holds both the plain-English <code>rawInput</code> and its deterministic <code>fallbackResponse</code>).
+        </li>
+        <li>
+          <strong>Adjust traffic-light surplus thresholds or 30-day math:</strong> Open <code>src/lib/calculations.ts</code> inside <code>computeDerivedMetrics</code> (currently <code>emerald</code> when surplus <code>&gt;= 10%</code> of income, <code>amber</code> between <code>0%–10%</code>, and <code>rose</code> below <code>$0</code>).
+        </li>
+        <li>
+          <strong>Tune keyword rules for offline/fallback parsing:</strong> Open <code>src/lib/fallback-parser.ts</code> and update <code>INCOME_KEYWORDS</code> or <code>EXPENSE_RULES</code>.
+        </li>
+        <li>
+          <strong>Change the Slider range or step size:</strong> Open <code>src/components/CategoryLedger.tsx</code> (<code>&lt;Slider min={0} max={150} step={5} /&gt;</code>) and matching bounds in <code>src/lib/schemas.ts</code> / <code>src/lib/calculations.ts</code>.
+        </li>
+        <li>
+          <strong>Customize the copied Markdown template:</strong> Open <code>src/lib/markdown-export.ts</code> inside <code>formatActionPlanMarkdown</code>.
+        </li>
+      </ul>
+    </section>
+
+    <!-- 5. A Practice to Reuse -->
+    <section>
+      <h2>5. A Practice to Reuse — Spec-to-Schema-to-Slice Invariant Verification</h2>
+      <p>
+        <strong>What happened in this project:</strong> During planning (<code>devpost/spec.md &gt; Decisions and Open Issues &gt; Build-Time Scrutiny Items</code>), two boundary risks were explicitly recorded before writing application code:
+      </p>
+      <ul>
+        <li>
+          <strong>State Normalization Invariant:</strong> Storing both <code>sliderPercent</code> and <code>simulatedAmount</code> inside <code>localStorage["pulse_ledger_state"]</code> risked drift if hydrated or updated in multiple places. Routing every state transition through <code>computeSimulatedAmount</code> in <code>src/lib/calculations.ts</code> guaranteed <code>Fixed Essentials</code> stay locked at <code>100%</code> everywhere.
+        </li>
+        <li>
+          <strong>Fallback Clause Separation:</strong> Writing a mechanical check for <code>src/lib/fallback-parser.ts</code> in Slice 1 immediately caught that a sentence like <code>"I earn $3,800 a month after tax"</code> matched standalone <code>tax</code> in the expense rules—allowing a targeted fix (<code>property tax</code>) documented in <code>devpost/checklist.md &gt; Revisions</code> before building the dashboard UI.
+        </li>
+      </ul>
+      <details>
+        <summary>How to reuse this pattern on your next agent build</summary>
+        <p style="margin-top:0.5rem; margin-bottom:0;">
+          Whenever a product rule constrains data (like read-only categories or derived totals), write a named normalization function in the spec's <strong>Data Model</strong> section and require Slice 1/2 mechanical verification to test an adversarial input against it before moving to downstream UI slices.
+        </p>
+      </details>
+    </section>
+
+    <!-- 6. How to Run Locally -->
+    <section>
+      <h2>6. How to Run &amp; Reopen</h2>
+      <pre>npm install
+npm run dev
+# Open http://localhost:3000 in your browser</pre>
+      <p style="margin-top:0.75rem; margin-bottom:0;">
+        <em>Note:</em> This map is a static snapshot generated at commit <code>eb92df4</code>. Reopen <code>devpost/app-map.html</code> directly in any browser (works offline with zero network dependencies).
+      </p>
+    </section>
+
+    <footer>
+      PulseLedger · Generated during <code>5-build</code> learning wrap-up
+    </footer>
+  </div>
+</body>
+</html>
